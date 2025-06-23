@@ -1,47 +1,40 @@
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import * as WebBrowser from "expo-web-browser";
 import * as AuthSession from "expo-auth-session";
 import { useSSO } from "@clerk/clerk-expo";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useCallback } from "react";
-import { router } from "expo-router";
 
 export default function App() {
   const { startSSOFlow } = useSSO();
 
-  const handleFacebookLogin = useCallback(async () => {
-    try {
-      const { createdSessionId, setActive, signIn, signUp } =
-        await startSSOFlow({
-          strategy: "oauth_facebook",
-          redirectUrl: AuthSession.makeRedirectUri(),
+  const handleLogin = useCallback(
+    async (provider: "facebook" | "google") => {
+      try {
+        const { createdSessionId, setActive } = await startSSOFlow({
+          strategy: `oauth_${provider}`,
+          redirectUrl: AuthSession.makeRedirectUri({}),
         });
-      if (createdSessionId) {
-        setActive!({ session: createdSessionId });
-      } else {
-        router.push("/home");
-      }
-    } catch (error) {
-      console.error(JSON.stringify(error, null, 2));
-    }
-  }, []);
-  const handleGoogleLogin = useCallback(async () => {
-    try {
-      const { createdSessionId, setActive, signIn, signUp } =
-        await startSSOFlow({
-          strategy: "oauth_google",
-          redirectUrl: AuthSession.makeRedirectUri(),
-        });
-      if (createdSessionId) {
-        setActive!({ session: createdSessionId });
-      } else {
-        router.push("/home");
-      }
-    } catch (error) {
-      console.error(JSON.stringify(error, null, 2));
-    }
-  }, []);
 
+        if (createdSessionId && setActive) {
+          await setActive({ session: createdSessionId });
+        } else {
+          console.warn(`No session returned from ${provider}`);
+        }
+      } catch (err) {
+        console.error("Clerk SSO error:", JSON.stringify(err, null, 2));
+      }
+    },
+    [startSSOFlow]
+  );
+
+  const handleFacebookLogin = useCallback(
+    () => handleLogin("facebook"),
+    [handleLogin]
+  );
+  const handleGoogleLogin = useCallback(
+    () => handleLogin("google"),
+    [handleLogin]
+  );
   return (
     <View className="flex-1 bg-white">
       {/* image  */}
@@ -66,11 +59,11 @@ export default function App() {
             <View className="flex-row items-center justify-between py-2">
               <Image
                 source={require("@/assets/images/instagram_icon.webp")}
-                className="w-8 h-8"
+                className="w-10 h-10"
                 resizeMode="contain"
               />
               <Text className="flex-1 ml-4 text-lg font-medium">
-                Continue with WayneStagram
+                Continue with Instagram
               </Text>
               <Ionicons name="chevron-forward" size={24} color="#1f2937" />
             </View>
@@ -88,7 +81,7 @@ export default function App() {
             <View className="flex-row items-center justify-evenly">
               <Image
                 source={require("@/assets/images/google.webp")}
-                className="w-8 h-8"
+                className="w-12 h-12"
                 resizeMode="contain"
               />
               <Text className="flex-1 ml-4 text-lg font-medium">

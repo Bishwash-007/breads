@@ -2,7 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs, useRouter } from "expo-router";
 import { Platform, TouchableOpacity } from "react-native";
 import * as Haptics from "expo-haptics";
-import { SignedOut, useAuth } from "@clerk/clerk-expo";
+import { useAuth } from "@clerk/clerk-expo";
 
 interface TabBarIconProps {
   name: keyof typeof Ionicons.glyphMap;
@@ -11,12 +11,9 @@ interface TabBarIconProps {
   focused?: boolean;
 }
 
-const TabBarIcon = ({
-  name,
-  color,
-  size = 24,
-  focused = false,
-}: TabBarIconProps) => <Ionicons name={name} color={color} size={size} />;
+const TabBarIcon = ({ name, color, size = 24 }: TabBarIconProps) => (
+  <Ionicons name={name} color={color} size={size} />
+);
 
 export default function TabsLayout() {
   const router = useRouter();
@@ -42,7 +39,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="feed"
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name={focused ? "home" : "home-outline"}
               color={color}
@@ -54,7 +51,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="search"
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name={focused ? "search" : "search-outline"}
               color={color}
@@ -74,7 +71,7 @@ export default function TabsLayout() {
           },
         }}
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name={focused ? "add-circle" : "add-circle-outline"}
               color={color}
@@ -86,7 +83,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="favourites"
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name={focused ? "heart" : "heart-outline"}
               color={color}

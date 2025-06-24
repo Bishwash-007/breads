@@ -1,7 +1,12 @@
 import { ClerkLoaded, ClerkProvider, useAuth } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
-import { Slot, useRouter, useSegments } from "expo-router";
-import "../global.css";
+import {
+  Slot,
+  useRouter,
+  useSegments,
+  useNavigationContainerRef,
+} from "expo-router";
+import { isRunningInExpoGo } from "expo";
 import { LogBox } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import {
@@ -13,6 +18,21 @@ import {
 import { useEffect } from "react";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
+import * as Sentry from "@sentry/react-native";
+
+import "../global.css";
+
+const navigationIntegration = Sentry.reactNavigationIntegration({
+  enableTimeToInitialDisplay: !isRunningInExpoGo(),
+  routeChangeTimeoutMs: 1000, // default: 1000
+  ignoreEmptyBackNavigationTransactions: false,
+});
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  tracesSampleRate: 1.0,
+  integrations: [navigationIntegration],
+  enableNativeFramesTracking: !isRunningInExpoGo(),
+});
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
   unsavedChangesWarning: false,
@@ -47,19 +67,23 @@ const InitialLayout = () => {
     if (!isLoaded) return;
     const inAuthGroup = segments[0] === "(auth)";
     if (isSignedIn && !inAuthGroup) {
-      router.replace("/(auth)/(tabs)/feed");
+      router.replace("/(auth)/(tabs)/profile");
     } else if (!isSignedIn && inAuthGroup) {
       router.replace("/(public)");
+    } else {
     }
-    else{
-
-    }
-  }, [isLoaded, isSignedIn, router, segments]);
+  }, [isSignedIn]);
 
   return <Slot />;
 };
 
-export default function RootLayout() {
+export default Sentry.wrap(function RootLayout() {
+  const ref = useNavigationContainerRef();
+  useEffect(() => {
+    if (ref) {
+      navigationIntegration.registerNavigationContainer(ref);
+    }
+  }, [ref]);
   return (
     <ClerkProvider publishableKey={clerkPublishableKey} tokenCache={tokenCache}>
       <ClerkLoaded>
@@ -69,4 +93,4 @@ export default function RootLayout() {
       </ClerkLoaded>
     </ClerkProvider>
   );
-}
+});

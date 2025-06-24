@@ -39,6 +39,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="feed"
         options={{
+          headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name={focused ? "home" : "home-outline"}
@@ -51,6 +52,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="search"
         options={{
+          headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name={focused ? "search" : "search-outline"}
@@ -67,7 +69,7 @@ export default function TabsLayout() {
           tabPress: (e) => {
             e.preventDefault();
             Haptics.selectionAsync();
-            router.push("/(auth)/(modal)");
+            router.push("/(auth)/(modal)/create");
           },
         }}
         options={{
@@ -83,6 +85,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="favourites"
         options={{
+          headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name={focused ? "heart" : "heart-outline"}
@@ -95,6 +98,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
+          headerShown: false,
           tabBarIcon: ({ color, size, focused }) => (
             <TabBarIcon
               name={focused ? "person" : "person-outline"}

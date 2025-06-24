@@ -1,4 +1,10 @@
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import * as AuthSession from "expo-auth-session";
 import { useSSO } from "@clerk/clerk-expo";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -43,7 +49,6 @@ export default function App() {
         resizeMode="contain"
         className="w-full h-[350px]"
       />
-
       <ScrollView className="flex-1 py-6">
         <Text className="text-xl font-semibold py-6 text-center">
           How would you like to use Breads?

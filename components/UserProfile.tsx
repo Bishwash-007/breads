@@ -7,27 +7,21 @@ import { formatNumber } from "@/utils/format";
 
 export const UserProfileView: React.FC<ProfileProps> = () => {
   const { userProfile } = useUserProfile();
-  // const profile = useQuery(api.users.getUserById, {
-  //   userId: userId as Id<"users">,
-  // });
-  // const isSelf = userId === userProfile?._id;
-
   const isSelf = true;
 
   return (
     <View className="px-6 py-6">
-      <View className=" flex flex-row justify-between items-center">
+      <View className="flex flex-row justify-between items-center">
         <View className="flex flex-col">
-          <Text className="text-lg font-semibold">
+          <Text className="text-lg font-semibold text-black dark:text-white">
             {userProfile?.first_name}
             {userProfile?.last_name}
           </Text>
-          <Text className="text-sm text-gray-500">
+          <Text className="text-sm text-muted-light dark:text-muted-dark">
             @{userProfile?.username}
           </Text>
         </View>
 
-        {/* user Image  */}
         <View>
           <Image
             source={{
@@ -39,74 +33,71 @@ export const UserProfileView: React.FC<ProfileProps> = () => {
         </View>
       </View>
 
-      {/* user bio */}
-
       <View className="text-lg flex flex-col pt-4">
-        <Text>{userProfile?.bio}</Text>
-
+        <Text className="text-black dark:text-white">{userProfile?.bio}</Text>
         <View className="flex flex-row pt-2">
-          <Text>{formatNumber(userProfile?.followersCount)}</Text>
+          <Text className="text-black dark:text-white">
+            {formatNumber(userProfile?.followersCount)}
+          </Text>
         </View>
       </View>
 
       <View className="flex flex-row items-center gap-2 justify-start pt-2">
-        <Ionicons name="globe-outline" size={12} />
-        <Text>{userProfile?.websiteUrl}</Text>
+        <Ionicons
+          name="globe-outline"
+          size={12}
+          color="gray"
+        />
+        <Text className="text-black dark:text-white">{userProfile?.websiteUrl}</Text>
       </View>
 
-      {/* conditonal button */}
       <>
         <View className="w-full flex-row justify-between items-center gap-2 mt-6">
           {isSelf ? (
             <>
-              {/* Edit Profile Button */}
-
               <Link
                 href={`/(auth)/(modal)/edit-profile?biostring=${encodeURIComponent(userProfile?.bio || "")}&linkstring=${encodeURIComponent(userProfile?.websiteUrl || "")}&userId=${userProfile?._id}&imageUrl=${encodeURIComponent(userProfile?.imageUrl || "")}`}
                 asChild
               >
                 <TouchableOpacity
-                  className="flex-1 bg-black py-2 px-4 rounded-lg flex-row items-center justify-center space-x-4 gap-x-2"
+                  className="flex-1 bg-black dark:bg-white py-2 px-4 rounded-lg flex-row items-center justify-center gap-x-2"
                   onPress={() => console.log("Edit Profile")}
                 >
                   <Ionicons name="create-outline" size={20} color="white" />
-                  <Text className="text-base font-semibold text-white">
+                  <Text className="text-base font-semibold text-white dark:text-black">
                     Edit Profile
                   </Text>
                 </TouchableOpacity>
               </Link>
 
-              {/* Share Profile Button */}
               <TouchableOpacity
-                className="flex-1 bg-white py-2 px-4 rounded-lg flex-row items-center justify-center space-x-2 gap-x-2 border border-gray-300"
+                className="flex-1 bg-white dark:bg-muted-800 py-2 px-4 rounded-lg flex-row items-center justify-center gap-x-2 border border-gray-300 dark:border-muted-700"
                 onPress={() => console.log("Share Profile")}
               >
                 <Ionicons name="share-social-outline" size={20} color="black" />
-                <Text className="text-base font-semibold text-black">
+                <Text className="text-base font-semibold text-black dark:text-white">
                   Share Profile
                 </Text>
               </TouchableOpacity>
             </>
           ) : (
             <>
-              {/* Follow Button */}
               <TouchableOpacity
-                className="flex-1 bg-black py-2 px-4 rounded-lg flex-row items-center justify-center  gap-x-2 space-x-2"
+                className="flex-1 bg-black dark:bg-white py-2 px-4 rounded-lg flex-row items-center justify-center gap-x-2"
                 onPress={() => console.log("Follow")}
               >
                 <Ionicons name="person-add-outline" size={20} color="white" />
-                <Text className="text-base font-semibold text-white">
+                <Text className="text-base font-semibold text-white dark:text-black">
                   Follow
                 </Text>
               </TouchableOpacity>
 
-              {/* Mention Button */}
               <TouchableOpacity
-                className="flex-1 bg-white py-2 px-4 rounded-lg flex-row items-center justify-center space-x-2 gap-x-2 border border-gray-300"
+                className="flex-1 bg-white dark:bg-muted-800 py-2 px-4 rounded-lg flex-row items-center justify-center gap-x-2 border border-gray-300 dark:border-muted-700"
                 onPress={() => console.log("Mention")}
               >
                 <Ionicons name="at-outline" size={20} color="black" />
-                <Text className="text-base font-semibold text-black">
+                <Text className="text-base font-semibold text-black dark:text-white">
                   Mention
                 </Text>
               </TouchableOpacity>
@@ -114,8 +105,6 @@ export const UserProfileView: React.FC<ProfileProps> = () => {
           )}
         </View>
       </>
-
-      {/* end */}
     </View>
   );
 };

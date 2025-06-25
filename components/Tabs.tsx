@@ -17,7 +17,9 @@ const Tabs = () => {
       >
         <Text
           className={`text-base font-medium ${
-            isActive ? "text-black dark:text-white" : "text-neutral-400"
+            isActive
+              ? "text-black dark:text-white"
+              : "text-neutral-400 dark:text-neutral-500"
           }`}
         >
           {item}
@@ -34,7 +36,7 @@ const Tabs = () => {
   };
 
   return (
-    <View className="w-full border-b-hairline py-4 border-neutral-200 dark:border-neutral-700">
+    <View className="w-full border-b border-neutral-200 dark:border-neutral-700 py-4">
       <FlatList
         data={tabItems}
         renderItem={renderTab}

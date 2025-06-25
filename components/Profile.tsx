@@ -21,10 +21,14 @@ const Profile: React.FC<ProfileProps> = ({ userId, showBackButton }) => {
   };
 
   return (
-    <View className="flex-1 pt-12 bg-white">
+    <View className="flex-1 pt-12 bg-white dark:bg-black">
       <FlatList
         data={[]}
-        renderItem={() => <Text>This is renderItem</Text>}
+        renderItem={() => (
+          <Text className="text-black dark:text-white">
+            This is renderItem
+          </Text>
+        )}
         keyExtractor={(_, i) => String(i)}
         ListEmptyComponent={<EmptyState />}
         ListHeaderComponent={

@@ -19,25 +19,26 @@ export const ListHeaderComponent: React.FC<{
               onPress={() => router.back()}
               className="flex-row items-center space-x-2"
             >
-              <Ionicons name="chevron-back" size={24} />
-              <Text className="text-xl font-medium">Back</Text>
+              <Ionicons name="chevron-back" size={24} color="black" />
+              <Text className="text-xl font-medium text-black dark:text-white">
+                Back
+              </Text>
             </TouchableOpacity>
           ) : (
-            <MaterialCommunityIcons name="web" size={24} />
+            <MaterialCommunityIcons name="web" size={24} color="black" />
           )}
         </View>
 
         {/* Right */}
         <View className="flex-row items-center justify-center space-x-4 gap-4">
-          <Ionicons name="logo-instagram" size={24} />
+          <Ionicons name="logo-instagram" size={24} color="black" />
           <TouchableOpacity onPress={handleSignOut}>
-            <Ionicons name="log-out-outline" size={24} />
+            <Ionicons name="log-out-outline" size={24} color="black" />
           </TouchableOpacity>
         </View>
-
       </View>
 
-      {/* user profile  */}
+      {/* user profile */}
       <UserProfileView showBackButton={false} />
       <Tabs />
     </>

@@ -7,7 +7,7 @@ import {
   useNavigationContainerRef,
 } from "expo-router";
 import { isRunningInExpoGo } from "expo";
-import { LogBox } from "react-native";
+import { LogBox, StatusBar, View } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import {
   DMSans_400Regular,
@@ -21,6 +21,7 @@ import { ConvexProviderWithClerk } from "convex/react-clerk";
 import * as Sentry from "@sentry/react-native";
 
 import "../global.css";
+import { useThemeStore } from "@/hooks/useThemeStore";
 
 const navigationIntegration = Sentry.reactNavigationIntegration({
   enableTimeToInitialDisplay: !isRunningInExpoGo(),
@@ -38,16 +39,15 @@ const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
   unsavedChangesWarning: false,
 });
 
-const clerkPublishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const clerkPublishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 if (!clerkPublishableKey) {
   throw new Error("Missing Publishable Key");
 }
 
-LogBox.ignoreLogs(["Clerk: Clerk has been loaded with development keys"]);
-
 SplashScreen.preventAutoHideAsync();
 
 const InitialLayout = () => {
+  const theme = useThemeStore((state) => state.theme);
   const [fontsLoaded] = useFonts({
     DMSans_400Regular,
     DMSans_500Medium,
@@ -61,20 +61,28 @@ const InitialLayout = () => {
     if (fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, isLoaded]);
 
   useEffect(() => {
     if (!isLoaded) return;
     const inAuthGroup = segments[0] === "(auth)";
     if (isSignedIn && !inAuthGroup) {
-      router.replace("/(auth)/(tabs)/profile");
+      router.replace("/(auth)/(tabs)/feed");
     } else if (!isSignedIn && inAuthGroup) {
       router.replace("/(public)");
     } else {
     }
   }, [isSignedIn]);
 
-  return <Slot />;
+  if (!fontsLoaded || !isLoaded) return null;
+
+  return (
+    <View
+      className={`${theme === "dark" ? "dark" : ""} flex-1 bg-white dark:bg-black`}
+    >
+      <Slot />
+    </View>
+  );
 };
 
 export default Sentry.wrap(function RootLayout() {

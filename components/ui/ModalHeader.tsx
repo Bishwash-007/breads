@@ -18,13 +18,19 @@ export const Header: React.FC<ModalHeaderProps> = ({
   onPressRight,
 }) => {
   return (
-    <View className="flex flex-row justify-between items-center pt-6 px-2">
+    <View className="flex flex-row justify-between items-center pt-6 px-2 pb-4">
       <TouchableOpacity onPress={onPressLeft}>
-        <Text className="text-lg text-gray-600">{leftText}</Text>
+        <Text className="text-lg text-gray-600 dark:text-gray-400">
+          {leftText}
+        </Text>
       </TouchableOpacity>
-      <Text className="text-2xl font-semibold">{title}</Text>
+      <Text className="text-2xl font-semibold text-black dark:text-white">
+        {title}
+      </Text>
       <TouchableOpacity onPress={onPressRight}>
-        <Text className="text-lg text-gray-600">{rightText}</Text>
+        <Text className="text-lg text-gray-600 dark:text-gray-400">
+          {rightText}
+        </Text>
       </TouchableOpacity>
     </View>
   );

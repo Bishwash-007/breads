@@ -1,6 +1,10 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs, useRouter } from "expo-router";
-import { Platform, TouchableOpacity } from "react-native";
+import {
+  Platform,
+  TouchableOpacity,
+  useColorScheme,
+} from "react-native";
 import * as Haptics from "expo-haptics";
 import { useAuth } from "@clerk/clerk-expo";
 
@@ -18,23 +22,34 @@ const TabBarIcon = ({ name, color, size = 24 }: TabBarIconProps) => (
 export default function TabsLayout() {
   const router = useRouter();
   const { signOut } = useAuth();
+  const colorScheme = useColorScheme();
+
+  const isDark = colorScheme === "dark";
 
   const handleSignOut = () => {
     signOut();
     router.replace("/(public)");
   };
+
+  const activeTintColor = isDark ? "#fff" : "#000";
+  const inactiveTintColor = isDark ? "#aaa" : "#666";
+  const tabBarBg = isDark ? "#000" : "#fff";
+  const iconColor = isDark ? "#fff" : "#000";
+
   return (
     <Tabs
-      screenOptions={({ route }) => ({
+      screenOptions={{
         tabBarShowLabel: false,
-        tabBarActiveTintColor: "#000",
-        tabBarInactiveTintColor: "#666",
+        tabBarActiveTintColor: activeTintColor,
+        tabBarInactiveTintColor: inactiveTintColor,
         tabBarStyle: {
           height: Platform.OS === "ios" ? 80 : 60,
           alignItems: "center",
-          backgroundColor: "#fff",
+          backgroundColor: tabBarBg,
+          borderTopWidth: 0.2,
+          borderTopColor: isDark ? "#222" : "#ccc",
         },
-      })}
+      }}
     >
       <Tabs.Screen
         name="feed"
@@ -44,7 +59,6 @@ export default function TabsLayout() {
             <TabBarIcon
               name={focused ? "home" : "home-outline"}
               color={color}
-              size={24}
             />
           ),
         }}
@@ -57,7 +71,6 @@ export default function TabsLayout() {
             <TabBarIcon
               name={focused ? "search" : "search-outline"}
               color={color}
-              size={24}
             />
           ),
         }}
@@ -90,7 +103,6 @@ export default function TabsLayout() {
             <TabBarIcon
               name={focused ? "heart" : "heart-outline"}
               color={color}
-              size={24}
             />
           ),
         }}
@@ -99,16 +111,19 @@ export default function TabsLayout() {
         name="profile"
         options={{
           headerShown: false,
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name={focused ? "person" : "person-outline"}
               color={color}
-              size={24}
             />
           ),
           headerRight: () => (
             <TouchableOpacity onPress={handleSignOut} className="mr-6">
-              <Ionicons name="log-out-outline" size={24} color="#000" />
+              <Ionicons
+                name="log-out-outline"
+                size={24}
+                color={iconColor}
+              />
             </TouchableOpacity>
           ),
         }}

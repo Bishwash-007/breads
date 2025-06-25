@@ -63,7 +63,7 @@ const EditProfile = () => {
 
         <TouchableOpacity
           onPress={() => setShowModal(true)}
-          className="absolute bottom-8 right-[34%] bg-white dark:bg-neutral-800 border-hairline dark:border-gray-600 rounded-2xl p-2 shadow"
+          className="absolute bottom-8 right-[34%] bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-2xl p-2 shadow"
         >
           <Ionicons name="pencil-outline" size={16} color="#555" />
         </TouchableOpacity>
@@ -78,7 +78,7 @@ const EditProfile = () => {
               {item.label}
             </Text>
             <View
-              className={`border-hairline rounded-2xl w-full h-16 px-2 flex flex-row items-center bg-white dark:bg-neutral-900 ${
+              className={`border border-neutral-200 dark:border-neutral-700 rounded-lg w-full h-16 px-2 flex flex-row items-center bg-white dark:bg-neutral-900 ${
                 item.icon ? "space-x-2" : ""
               }`}
             >
@@ -95,7 +95,7 @@ const EditProfile = () => {
                 onChangeText={item.setter}
                 placeholder={item.placeholder}
                 placeholderTextColor="#999"
-                multiline
+                numberOfLines={2}
                 className="flex-1 text-gray-800 dark:text-gray-200 text-base"
               />
             </View>
@@ -105,8 +105,6 @@ const EditProfile = () => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       />
-
-      {/* modal  */}
 
       <EditAvatarModal
         visible={showModal}

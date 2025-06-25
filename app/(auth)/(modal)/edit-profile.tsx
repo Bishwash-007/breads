@@ -1,6 +1,20 @@
-import { View, Text, Image, ScrollView, TouchableOpacity } from "react-native";
-import React from "react";
-import { Link, router, useLocalSearchParams } from "expo-router";
+import {
+  View,
+  Text,
+  Image,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
+import React, { useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { Header } from "@/components/ui/ModalHeader";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { Ionicons } from "@expo/vector-icons";
+import EditAvatarModal from "@/components/AlertModal";
+import { getProfileFields } from "@/hooks/profile";
 
 const EditProfile = () => {
   const { biostring, linkstring, userId, imageUrl } = useLocalSearchParams<{
@@ -9,57 +23,97 @@ const EditProfile = () => {
     userId: string;
     imageUrl: string;
   }>();
-  const isPresented = router.canGoBack();
+
+  const [bio, setBio] = useState(biostring);
+  const [link, setLink] = useState(linkstring);
+  const [image, setImage] = useState(imageUrl);
+  const [newImage, setNewImage] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const updateUser = useMutation(api.users.updateUser);
+
+  const onDone = async () => {
+    await updateUser({
+      _id: userId as Id<"users">,
+      bio,
+      websiteUrl: link,
+    });
+    router.dismiss();
+  };
+
+  const handleImagePicked = (uri: string) => {
+    setNewImage(uri);
+    setImage(uri);
+  };
+
+  const fields = getProfileFields(bio, setBio, link, setLink);
 
   return (
-    <ScrollView className="px-5 py-6 bg-white dark:bg-black">
-      {isPresented && (
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text>Dismiss</Text>
+    <View className="px-5 mt-6 bg-white dark:bg-black flex-1">
+      <Header
+        title="Edit-Profile"
+        leftText="Cancel"
+        rightText="Done"
+        onPressRight={onDone}
+        onPressLeft={() => router.dismiss()}
+      />
+
+      <View className="relative items-center justify-center mt-12">
+        <Image source={{ uri: image }} className="size-36 rounded-full mb-12" />
+
+        <TouchableOpacity
+          onPress={() => setShowModal(true)}
+          className="absolute bottom-8 right-[34%] bg-white dark:bg-neutral-800 border-hairline dark:border-gray-600 rounded-2xl p-2 shadow"
+        >
+          <Ionicons name="pencil-outline" size={16} color="#555" />
         </TouchableOpacity>
-      )}
-      <Text className="text-2xl text-center font-bold text-black dark:text-white mb-5">
-        Edit Profile
-      </Text>
-
-      {/* Avatar Preview */}
-      {imageUrl ? (
-        <Image
-          source={{ uri: decodeURIComponent(imageUrl) }}
-          className="w-24 h-24 rounded-full mb-6"
-        />
-      ) : null}
-
-      {/* Bio Section */}
-      <View className="mb-6">
-        <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-200 mb-1">
-          Bio:
-        </Text>
-        <Text className="text-base text-neutral-600 dark:text-neutral-400">
-          {decodeURIComponent(biostring || "")}
-        </Text>
       </View>
 
-      {/* Link Section */}
-      <View className="mb-6">
-        <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-200 mb-1">
-          Link:
-        </Text>
-        <Text className="text-base text-blue-600">
-          {decodeURIComponent(linkstring || "")}
-        </Text>
-      </View>
+      <FlatList
+        data={fields}
+        keyExtractor={(item) => item.key}
+        renderItem={({ item }) => (
+          <View className="w-full justify-center mb-4">
+            <Text className="text-lg text-gray-700 dark:text-gray-300 py-2 px-1">
+              {item.label}
+            </Text>
+            <View
+              className={`border-hairline rounded-2xl w-full h-16 px-2 flex flex-row items-center bg-white dark:bg-neutral-900 ${
+                item.icon ? "space-x-2" : ""
+              }`}
+            >
+              {item.icon && (
+                <Ionicons
+                  name={item.icon}
+                  size={20}
+                  color="#555"
+                  className="px-2"
+                />
+              )}
+              <TextInput
+                value={item.value}
+                onChangeText={item.setter}
+                placeholder={item.placeholder}
+                placeholderTextColor="#999"
+                multiline
+                className="flex-1 text-gray-800 dark:text-gray-200 text-base"
+              />
+            </View>
+          </View>
+        )}
+        ListFooterComponent={<View className="mb-12" />}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      />
 
-      {/* User ID Section */}
-      <View className="mb-6">
-        <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-200 mb-1">
-          User ID:
-        </Text>
-        <Text className="text-base text-neutral-600 dark:text-neutral-400">
-          {userId}
-        </Text>
-      </View>
-    </ScrollView>
+      {/* modal  */}
+
+      <EditAvatarModal
+        visible={showModal}
+        onClose={() => setShowModal(false)}
+        onImagePicked={handleImagePicked}
+      />
+    </View>
   );
 };
 

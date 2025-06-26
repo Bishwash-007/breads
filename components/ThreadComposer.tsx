@@ -5,8 +5,6 @@ import {
   Image,
   Text,
   TouchableOpacity,
-  InputAccessoryView,
-  Button,
   Platform,
   KeyboardAvoidingView,
 } from "react-native";
@@ -17,13 +15,9 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Header } from "./ui/ModalHeader";
-import { Ionicons } from "@expo/vector-icons";
-
-type ThreadComposerProps = {
-  isPreview?: boolean;
-  isReply?: boolean;
-  threadId: Id<"messages">;
-};
+import { Entypo, Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { ThreadComposerProps } from "@/types/types";
 
 const ThreadComposer: React.FC<ThreadComposerProps> = ({
   isPreview,
@@ -35,25 +29,92 @@ const ThreadComposer: React.FC<ThreadComposerProps> = ({
   const [threadContent, setThreadContent] = useState("");
   const [text, setText] = useState("");
   const [mediaFiles, setMediaFiles] = useState<string[]>([]);
-  const inputAccessoryViewID = "uniqueInputAccessory";
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const addThread = useMutation(api.messages.addThread);
+
+  const onImagePicked = (uri: string) => {
+    setMediaFiles([uri]);
+  };
+
+  const clearMediaPicked = () => {
+    setMediaFiles([]);
+  };
 
   const handleSubmit = async () => {
     await addThread({
       threadId,
       content: threadContent,
+      mediaFiles,
     });
+
     setThreadContent("");
     setMediaFiles([]);
     router.dismiss();
+  };
+
+  const handleCamera = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { granted } = await ImagePicker.requestCameraPermissionsAsync();
+      if (!granted) {
+        setError("Camera permission denied.");
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+        mediaTypes: ["images", "videos"],
+      });
+
+      if (!result.canceled && result.assets?.length) {
+        onImagePicked(result.assets[0].uri);
+      }
+    } catch {
+      setError("Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLibrary = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { granted } = await ImagePicker.getMediaLibraryPermissionsAsync();
+      if (!granted) {
+        console.log("Media Picker permission Denied");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+        mediaTypes: ["images", "videos"],
+      });
+
+      if (!result.canceled && result.assets?.length) {
+        onImagePicked(result.assets[0].uri);
+      }
+    } catch (err) {
+      console.log("Something went wrong", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <KeyboardAvoidingView
       className="flex-1"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0} // Adjust for header if needed
+      keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
       <View className="flex-1 px-4 pt-8 bg-white dark:bg-black">
         <Header
@@ -81,56 +142,68 @@ const ThreadComposer: React.FC<ThreadComposerProps> = ({
               </Text>
               <Text className="text-gray-500">@{userProfile?.username}</Text>
 
-              <View className="mt-3 rounded-lg pl-3 py-2 bg-gray-50 dark:bg-neutral-900 flex-row items-end space-x-2">
-                <TextInput
-                  value={threadContent}
-                  onChangeText={setThreadContent}
-                  inputAccessoryViewID={
-                    Platform.OS === "ios" ? inputAccessoryViewID : undefined
-                  }
-                  placeholder="What's on your mind?"
-                  multiline
-                  className="flex-1 text-base text-black dark:text-white"
-                  placeholderTextColor="#888"
-                />
-                <TouchableOpacity
-                  onPress={() => console.log("Replied")}
-                  className="p-2"
-                >
-                  <Ionicons name="send-outline" size={20} color="#555" />
-                </TouchableOpacity>
+              {/* input section  */}
+              <View className="flex space-y-3">
+                {mediaFiles.length > 0 && (
+                  <View className="relative h-16 w-16">
+                    <Image
+                      source={{ uri: mediaFiles[0] }}
+                      className="h-full w-full rounded-md"
+                    />
+                    <TouchableOpacity
+                      onPress={clearMediaPicked}
+                      className="absolute -top-2 -right-2 bg-white rounded-full p-0.5 shadow-md"
+                    >
+                      <Entypo
+                        name="circle-with-cross"
+                        size={18}
+                        color="black"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                )}
+
+                <View className="rounded-lg pl-3 py-2 bg-gray-50 dark:bg-neutral-900 flex-row items-end space-x-2">
+                  <TextInput
+                    value={threadContent}
+                    onChangeText={setThreadContent}
+                    placeholder={"What's on your mind?"}
+                    multiline
+                    numberOfLines={4}
+                    className="flex-1 text-base text-black dark:text-white"
+                    placeholderTextColor="#888"
+                  />
+
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (isReply) {
+                        console.log("replied");
+                      } else {
+                        handleSubmit();
+                      }
+                    }}
+                    className="p-2"
+                  >
+                    <Ionicons name="send-outline" size={20} color="#555" />
+                  </TouchableOpacity>
+                </View>
               </View>
 
+              {/* icons rows  */}
               <View className="flex flex-row gap-4 pt-2">
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => handleLibrary()}>
                   <Ionicons name="image-outline" size={20} />
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => handleCamera()}>
                   <Ionicons name="camera-outline" size={20} />
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => handleCamera()}>
                   <Ionicons name="videocam-outline" size={20} />
-                </TouchableOpacity>
-                <TouchableOpacity>
-                  <Ionicons name="mic-outline" size={20} />
                 </TouchableOpacity>
               </View>
             </View>
           </View>
         </ScrollView>
-
-        {/* iOS Only Input Accessory */}
-        {Platform.OS === "ios" && (
-          <InputAccessoryView nativeID={inputAccessoryViewID}>
-            <View className="bg-white border-t px-4 py-2 dark:bg-neutral-900 flex-row justify-end">
-              <Button
-                title="Clear text"
-                onPress={() => setThreadContent("")}
-                color="#007aff"
-              />
-            </View>
-          </InputAccessoryView>
-        )}
       </View>
     </KeyboardAvoidingView>
   );

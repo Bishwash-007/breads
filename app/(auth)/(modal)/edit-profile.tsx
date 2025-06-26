@@ -63,7 +63,7 @@ const EditProfile = () => {
 
         <TouchableOpacity
           onPress={() => setShowModal(true)}
-          className="absolute bottom-8 right-[34%] bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-2xl p-2 shadow"
+          className="absolute bottom-8 right-[34%] bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-2xl p-2"
         >
           <Ionicons name="pencil-outline" size={16} color="#555" />
         </TouchableOpacity>

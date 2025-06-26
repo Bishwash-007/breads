@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Platform,
   KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import React, { useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
@@ -113,98 +115,130 @@ const ThreadComposer: React.FC<ThreadComposerProps> = ({
   return (
     <KeyboardAvoidingView
       className="flex-1"
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : "padding"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+      enabled
     >
-      <View className="flex-1 px-4 pt-8 bg-white dark:bg-black">
-        <Header
-          title="Create Post"
-          leftText="Cancel"
-          rightText="Post"
-          onPressLeft={() => router.dismiss()}
-          onPressRight={handleSubmit}
-        />
-
-        <ScrollView className="pt-2 px-2" keyboardShouldPersistTaps="handled">
-          <View className="border-hairline flex-row p-4 rounded-xl bg-white dark:bg-black dark:border-white">
-            <Image
-              source={
-                userProfile?.imageUrl
-                  ? { uri: userProfile.imageUrl }
-                  : undefined
-              }
-              className="size-12 rounded-full"
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View className="px-4 pt-6 justify-items-stretch flex flex-1 justify-between">
+          <View className="flex flex-col">
+            <Header
+              title="Create Post"
+              leftText="Cancel"
+              rightText="Post"
+              onPressLeft={() => router.dismiss()}
+              onPressRight={handleSubmit}
             />
 
-            <View className="flex-1 flex-col px-4">
-              <Text className="font-semibold text-base text-black dark:text-white">
-                {userProfile?.first_name} {userProfile?.last_name}
-              </Text>
-              <Text className="text-gray-500">@{userProfile?.username}</Text>
+            {/* Main scrollable content */}
+            <ScrollView
+              className="pt-2 px-2"
+              keyboardShouldPersistTaps="handled"
+            >
+              <View className="border-hairline flex-row p-4 rounded-xl bg-white dark:bg-black dark:border-white">
+                <Image
+                  source={
+                    userProfile?.imageUrl
+                      ? { uri: userProfile.imageUrl }
+                      : undefined
+                  }
+                  className="size-12 rounded-full"
+                />
+                <View className="flex-1 flex-col px-4">
+                  <Text className="font-semibold text-base text-black dark:text-white">
+                    {userProfile?.first_name} {userProfile?.last_name}
+                  </Text>
+                  <Text className="text-gray-500">
+                    @{userProfile?.username}
+                  </Text>
 
-              {/* input section  */}
-              <View className="flex space-y-3">
-                {mediaFiles.length > 0 && (
-                  <View className="relative h-16 w-16">
-                    <Image
-                      source={{ uri: mediaFiles[0] }}
-                      className="h-full w-full rounded-md"
-                    />
-                    <TouchableOpacity
-                      onPress={clearMediaPicked}
-                      className="absolute -top-2 -right-2 bg-white rounded-full p-0.5 shadow-md"
-                    >
-                      <Entypo
-                        name="circle-with-cross"
-                        size={18}
-                        color="black"
+                  {/* Input section */}
+                  <View className="flex space-y-3">
+                    {mediaFiles.length > 0 && (
+                      <View className="relative h-16 w-16">
+                        <Image
+                          source={{ uri: mediaFiles[0] }}
+                          className="h-full w-full rounded-md"
+                        />
+                        <TouchableOpacity
+                          onPress={clearMediaPicked}
+                          className="absolute -top-2 -right-2 bg-white rounded-full p-0.5 shadow-md"
+                        >
+                          <Entypo
+                            name="circle-with-cross"
+                            size={18}
+                            color="black"
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+
+                    {/* Single instance of the text input */}
+                    <View className="rounded-lg pl-3 py-2 bg-gray-50 dark:bg-neutral-900 flex-row items-end space-x-2">
+                      <TextInput
+                        value={threadContent}
+                        onChangeText={setThreadContent}
+                        placeholder={"What's on your mind?"}
+                        multiline
+                        numberOfLines={4}
+                        className="flex-1 text-base text-black dark:text-white"
+                        placeholderTextColor="#888"
                       />
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (isReply) {
+                            console.log("replied");
+                          } else {
+                            handleSubmit();
+                          }
+                        }}
+                        className="p-2"
+                      >
+                        <Ionicons name="send-outline" size={20} color="#555" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  {/* Icons row */}
+                  <View className="flex flex-row gap-4 pt-2">
+                    <TouchableOpacity onPress={() => handleLibrary()}>
+                      <Ionicons name="image-outline" size={20} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleCamera()}>
+                      <Ionicons name="camera-outline" size={20} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleCamera()}>
+                      <Ionicons name="videocam-outline" size={20} />
                     </TouchableOpacity>
                   </View>
-                )}
-
-                <View className="rounded-lg pl-3 py-2 bg-gray-50 dark:bg-neutral-900 flex-row items-end space-x-2">
-                  <TextInput
-                    value={threadContent}
-                    onChangeText={setThreadContent}
-                    placeholder={"What's on your mind?"}
-                    multiline
-                    numberOfLines={4}
-                    className="flex-1 text-base text-black dark:text-white"
-                    placeholderTextColor="#888"
-                  />
-
-                  <TouchableOpacity
-                    onPress={() => {
-                      if (isReply) {
-                        console.log("replied");
-                      } else {
-                        handleSubmit();
-                      }
-                    }}
-                    className="p-2"
-                  >
-                    <Ionicons name="send-outline" size={20} color="#555" />
-                  </TouchableOpacity>
                 </View>
               </View>
+            </ScrollView>
+          </View>
 
-              {/* icons rows  */}
-              <View className="flex flex-row gap-4 pt-2">
-                <TouchableOpacity onPress={() => handleLibrary()}>
-                  <Ionicons name="image-outline" size={20} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleCamera()}>
-                  <Ionicons name="camera-outline" size={20} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleCamera()}>
-                  <Ionicons name="videocam-outline" size={20} />
-                </TouchableOpacity>
-              </View>
+          {/* Fixed bottom input */}
+          {/* reply  */}
+          <View className="border-hairline rounded-lg py-2 px-3 mx-2 dark:bg-neutral-900">
+            <View className="flex-row items-center space-x-2">
+              <TextInput
+                value={threadContent}
+                onChangeText={setThreadContent}
+                placeholder={
+                  isReply ? "Write a reply..." : "What's on your mind?"
+                }
+                multiline
+                className="flex-1 text-base text-black dark:text-white py-1"
+                placeholderTextColor="#888"
+              />
+              <TouchableOpacity onPress={handleSubmit} className="p-2">
+                <Ionicons name="send-outline" size={24} color="#555" />
+              </TouchableOpacity>
             </View>
           </View>
-        </ScrollView>
-      </View>
+
+          {/* end  */}
+        </View>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 };

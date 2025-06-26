@@ -11,8 +11,7 @@ import {
   Keyboard,
 } from "react-native";
 import React, { useState } from "react";
-import { Id } from "@/convex/_generated/dataModel";
-import { Stack, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -20,6 +19,7 @@ import { Header } from "./ui/ModalHeader";
 import { Entypo, Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { ThreadComposerProps } from "@/types/types";
+import AlertModal from "./ui/AlertModal";
 
 const ThreadComposer: React.FC<ThreadComposerProps> = ({
   isPreview,
@@ -33,33 +33,33 @@ const ThreadComposer: React.FC<ThreadComposerProps> = ({
   const [mediaFiles, setMediaFiles] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showDiscardModal, setShowDiscardModal] = useState(false);
 
   const addThread = useMutation(api.messages.addThread);
-
-  const onImagePicked = (uri: string) => {
-    setMediaFiles([uri]);
-  };
-
-  const clearMediaPicked = () => {
-    setMediaFiles([]);
-  };
+  const generateUploadUrl = useMutation(api.messages.generateUploadUrl);
 
   const handleSubmit = async () => {
-    await addThread({
-      threadId,
-      content: threadContent,
-      mediaFiles,
-    });
-
-    setThreadContent("");
-    setMediaFiles([]);
-    router.dismiss();
+    setLoading(true);
+    try {
+      const ids = mediaFiles.length ? await uploadMediaFiles() : [];
+      await addThread({
+        threadId,
+        content: threadContent,
+        mediaFiles: ids,
+      });
+      setThreadContent("");
+      setMediaFiles([]);
+      router.dismiss();
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCamera = async () => {
     setLoading(true);
     setError(null);
-
     try {
       const { granted } = await ImagePicker.requestCameraPermissionsAsync();
       if (!granted) {
@@ -68,17 +68,16 @@ const ThreadComposer: React.FC<ThreadComposerProps> = ({
       }
 
       const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 1,
-        mediaTypes: ["images", "videos"],
+        allowsEditing: false,
+        mediaTypes: ["images", "videos", "livePhotos"],
       });
 
       if (!result.canceled && result.assets?.length) {
-        onImagePicked(result.assets[0].uri);
+        const uri = result.assets[0].uri;
+        setMediaFiles((prev) => [...prev, uri]);
       }
     } catch {
-      setError("Something went wrong.");
+      setError("Something went wrong with the camera.");
     } finally {
       setLoading(false);
     }
@@ -89,21 +88,24 @@ const ThreadComposer: React.FC<ThreadComposerProps> = ({
     setError(null);
 
     try {
-      const { granted } = await ImagePicker.getMediaLibraryPermissionsAsync();
+      const { granted } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!granted) {
-        console.log("Media Picker permission Denied");
+        console.log("Media Picker permission denied");
         return;
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: true,
+        allowsEditing: false,
         aspect: [1, 1],
         quality: 1,
         mediaTypes: ["images", "videos"],
+        allowsMultipleSelection: true,
       });
 
       if (!result.canceled && result.assets?.length) {
-        onImagePicked(result.assets[0].uri);
+        const uris = result.assets.map((a) => a.uri);
+        setMediaFiles((prev) => [...prev, ...uris]);
       }
     } catch (err) {
       console.log("Something went wrong", err);
@@ -111,6 +113,33 @@ const ThreadComposer: React.FC<ThreadComposerProps> = ({
       setLoading(false);
     }
   };
+
+  async function uploadMediaFiles(): Promise<string[]> {
+    const ids: string[] = [];
+
+    for (const uri of mediaFiles) {
+
+      const uploadUrl = await generateUploadUrl();
+
+      // Step 2: get blob from file system
+      const resp = await fetch(uri);
+      const blob = await resp.blob();
+
+      // Step 3: POST blob to signed URL
+      const uploadResp = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": blob.type },
+        body: blob,
+      });
+      if (!uploadResp.ok) throw new Error("Upload failed");
+
+      // Step 4: extract storage ID
+      const { storageId } = await uploadResp.json();
+      ids.push(storageId);
+    }
+
+    return ids;
+  }
 
   return (
     <KeyboardAvoidingView
@@ -126,16 +155,16 @@ const ThreadComposer: React.FC<ThreadComposerProps> = ({
               title="Create Post"
               leftText="Cancel"
               rightText="Post"
-              onPressLeft={() => router.dismiss()}
+              onPressLeft={() => setShowDiscardModal(true)}
               onPressRight={handleSubmit}
             />
 
             {/* Main scrollable content */}
             <ScrollView
-              className="pt-2 px-2"
+              className="py-2 px-2"
               keyboardShouldPersistTaps="handled"
             >
-              <View className="border-hairline flex-row p-4 rounded-xl bg-white dark:bg-black dark:border-white">
+              <View className="border-hairline flex-row px-4 py-4 rounded-2xl bg-white dark:bg-black dark:border-white">
                 <Image
                   source={
                     userProfile?.imageUrl
@@ -153,23 +182,32 @@ const ThreadComposer: React.FC<ThreadComposerProps> = ({
                   </Text>
 
                   {/* Input section */}
-                  <View className="flex space-y-3">
+                  <View className="flex space-y-3 pt-2">
+                    {/* if image selected  */}
                     {mediaFiles.length > 0 && (
-                      <View className="relative h-16 w-16">
-                        <Image
-                          source={{ uri: mediaFiles[0] }}
-                          className="h-full w-full rounded-md"
-                        />
-                        <TouchableOpacity
-                          onPress={clearMediaPicked}
-                          className="absolute -top-2 -right-2 bg-white rounded-full p-0.5 shadow-md"
-                        >
-                          <Entypo
-                            name="circle-with-cross"
-                            size={18}
-                            color="black"
-                          />
-                        </TouchableOpacity>
+                      <View className="flex-row flex-wrap mt-2">
+                        {mediaFiles.map((uri, idx) => (
+                          <View key={idx} className="relative h-20 w-20 m-1">
+                            <Image
+                              source={{ uri }}
+                              className="h-full w-full rounded-md"
+                            />
+                            <TouchableOpacity
+                              onPress={() => {
+                                setMediaFiles((prev) =>
+                                  prev.filter((_, i) => i !== idx)
+                                );
+                              }}
+                              className="absolute -top-1 -right-1 bg-white rounded-full p-0.5 shadow-md"
+                            >
+                              <Entypo
+                                name="circle-with-cross"
+                                size={18}
+                                color="black"
+                              />
+                            </TouchableOpacity>
+                          </View>
+                        ))}
                       </View>
                     )}
 
@@ -200,7 +238,7 @@ const ThreadComposer: React.FC<ThreadComposerProps> = ({
                   </View>
 
                   {/* Icons row */}
-                  <View className="flex flex-row gap-4 pt-2">
+                  <View className="flex flex-row gap-6 pt-4">
                     <TouchableOpacity onPress={() => handleLibrary()}>
                       <Ionicons name="image-outline" size={20} />
                     </TouchableOpacity>
@@ -218,7 +256,7 @@ const ThreadComposer: React.FC<ThreadComposerProps> = ({
 
           {/* Fixed bottom input */}
           {/* reply  */}
-          <View className="border-hairline rounded-lg py-2 px-3 mx-2 dark:bg-neutral-900">
+          <View className="border-hairline rounded-lg py-2 px-2 m-2 dark:bg-neutral-900">
             <View className="flex-row items-center space-x-2">
               <TextInput
                 value={threadContent}
@@ -235,8 +273,23 @@ const ThreadComposer: React.FC<ThreadComposerProps> = ({
               </TouchableOpacity>
             </View>
           </View>
-
           {/* end  */}
+
+          {showDiscardModal && (
+            <AlertModal
+              isVisible={showDiscardModal}
+              onDiscard={() => {
+                router.dismiss();
+                setThreadContent("");
+                setMediaFiles([]);
+                setShowDiscardModal(false);
+              }}
+              onSave={() => {
+                setShowDiscardModal(false);
+              }}
+              onCancel={() => setShowDiscardModal(false)}
+            />
+          )}
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>

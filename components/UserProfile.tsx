@@ -4,10 +4,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { formatNumber } from "@/utils/format";
 import { ProfileProps } from "@/types/types";
+import { useAuth } from "@clerk/clerk-expo";
 
 export const UserProfileView: React.FC<ProfileProps> = () => {
   const { userProfile } = useUserProfile();
-  const isSelf = true;
+  const { isSignedIn } = useAuth();
 
   return (
     <View className="px-6 py-6">
@@ -51,7 +52,7 @@ export const UserProfileView: React.FC<ProfileProps> = () => {
 
       <>
         <View className="w-full flex-row justify-between items-center gap-2 mt-6">
-          {isSelf ? (
+          {isSignedIn ? (
             <>
               <Link
                 href={`/(auth)/(modal)/edit-profile?biostring=${encodeURIComponent(userProfile?.bio || "")}&linkstring=${encodeURIComponent(userProfile?.websiteUrl || "")}&userId=${userProfile?._id}&imageUrl=${encodeURIComponent(userProfile?.imageUrl || "")}`}

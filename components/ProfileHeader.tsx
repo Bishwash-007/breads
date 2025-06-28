@@ -32,7 +32,7 @@ export const ListHeaderComponent: React.FC<{
         {/* Right */}
         <View className="flex-row items-center justify-center space-x-4 gap-4">
           <Ionicons name="logo-instagram" size={24} color="black" />
-          <TouchableOpacity onPress={handleSignOut}>
+          <TouchableOpacity onPress={() => handleSignOut()}>
             <Ionicons name="log-out-outline" size={24} color="black" />
           </TouchableOpacity>
         </View>

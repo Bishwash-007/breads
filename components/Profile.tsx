@@ -7,13 +7,16 @@ import { ProfileProps, ThreadItemProps } from "@/types/types";
 import { api } from "@/convex/_generated/api";
 import { usePaginatedQuery } from "convex/react";
 import ThreadItem from "./Threads";
+import { useRouter } from "expo-router";
 
 const Profile: React.FC<ProfileProps> = ({ userId, showBackButton }) => {
   const { signOut } = useAuth();
+  const router = useRouter();
 
   const handleSignOut = async () => {
     try {
       await signOut();
+      router.replace("/(public)");
     } catch (err) {
       console.error("Sign-out error:", err);
     }
@@ -27,7 +30,6 @@ const Profile: React.FC<ProfileProps> = ({ userId, showBackButton }) => {
       initialNumItems: 5,
     }
   );
-
 
   return (
     <View className="flex-1 pt-12 bg-white dark:bg-black">

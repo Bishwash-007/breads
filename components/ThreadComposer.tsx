@@ -86,7 +86,7 @@ const ThreadComposer: React.FC<ThreadComposerProps> = ({
                 <Text className="font-semibold text-base text-black dark:text-white">
                   {userProfile?.first_name} {userProfile?.last_name}
                 </Text>
-                <Text className="text-gray-500">@{userProfile?.username}</Text>
+                <Text className="text-gray-500 pb-2">@{userProfile?.username}</Text>
 
                 {mediaFiles.length > 0 && (
                   <View className="flex-row flex-wrap mt-2">

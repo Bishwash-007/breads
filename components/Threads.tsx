@@ -7,6 +7,7 @@ import {
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { ThreadItemProps } from "@/types/types";
+import { formatNumber, formatTimestamp } from "@/utils/format";
 
 const ThreadItem: React.FC<ThreadItemProps> = ({
   content,
@@ -33,7 +34,10 @@ const ThreadItem: React.FC<ThreadItemProps> = ({
               {creator.first_name} {creator.last_name}
             </Text>
             <Text className="text-muted-light dark:text-muted-dark text-xs">
-              @{creator.username} · {_creationTime}
+              @{creator.username}
+            </Text>
+            <Text className="text-muted-light dark:text-muted-dark text-xs">
+              {formatTimestamp(_creationTime)}
             </Text>
           </View>
 
@@ -46,14 +50,14 @@ const ThreadItem: React.FC<ThreadItemProps> = ({
           {mediaFiles?.length > 0 && (
             <View
               className={`py-2 ${
-                mediaFiles.length === 1
-                  ? ""
-                  : "flex-row flex-wrap space-x-2"
+                mediaFiles.length === 1 ? "" : "flex-row flex-wrap space-x-2"
               }`}
             >
               {mediaFiles.map((uri, idx) => {
                 const dimension =
-                  mediaFiles.length === 1 ? "w-full aspect-square" : "w-36 h-36";
+                  mediaFiles.length === 1
+                    ? "w-full aspect-square"
+                    : "w-36 h-36";
                 return (
                   <Image
                     key={idx}
@@ -69,27 +73,31 @@ const ThreadItem: React.FC<ThreadItemProps> = ({
           {/* Actions */}
           <View className="flex-row justify-between mt-2 pr-8">
             <TouchableOpacity className="flex-row items-center gap-2">
-              <Ionicons
-                name="heart-outline"
-                size={20}
-                color={"currentColor"}
-              />
-              <Text className="text-sm text-black dark:text-white">{likeCount}</Text>
+              <Ionicons name="heart-outline" size={20} color={"currentColor"} />
+              <Text className="text-sm text-black dark:text-white">
+                {formatNumber(likeCount)}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity className="flex-row items-center gap-2">
               <AntDesign name="message1" size={20} color={"currentColor"} />
-              <Text className="text-sm text-black dark:text-white">{commentCount}</Text>
+              <Text className="text-sm text-black dark:text-white">
+                {formatNumber(commentCount)}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity className="flex-row items-center gap-2">
               <Ionicons name="repeat" size={20} color={"currentColor"} />
-              <Text className="text-sm text-black dark:text-white">{retweetCount}</Text>
+              <Text className="text-sm text-black dark:text-white">
+                {formatNumber(retweetCount)}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity className="flex-row items-center gap-2">
               <Feather name="send" size={18} color={"currentColor"} />
-              <Text className="text-sm text-black dark:text-white">{retweetCount}</Text>
+              <Text className="text-sm text-black dark:text-white">
+                {formatNumber(retweetCount)}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

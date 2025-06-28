@@ -1,15 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
-
-export type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
-
-export type FieldProps = {
-  key: string;
-  label: string;
-  value: string;
-  setter: (text: string) => void;
-  placeholder: string;
-  icon: IoniconName | null;
-};
+import { FieldProps } from "@/types/types";
 
 export const getProfileFields = (
   bio: string,

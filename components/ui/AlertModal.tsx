@@ -1,13 +1,7 @@
 import { Modal, View, Text, TouchableOpacity } from "react-native";
 import React from "react";
 import { BlurView } from "expo-blur";
-
-export type AlertModalProps = {
-  isVisible: boolean;
-  onDiscard: () => void;
-  onSave: () => void;
-  onCancel: () => void;
-};
+import { AlertModalProps } from "@/types/types";
 
 const AlertModal: React.FC<AlertModalProps> = ({
   isVisible,

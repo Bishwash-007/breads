@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   View,
   ScrollView,
@@ -10,16 +11,15 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Header } from "./ui/ModalHeader";
 import { Entypo, Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
-import { ThreadComposerProps } from "@/types/types";
 import AlertModal from "./ui/AlertModal";
+import { ThreadComposerProps } from "@/types/types";
+import { useMediaManager } from "@/hooks/threads/useMediaManager";
 
 const ThreadComposer: React.FC<ThreadComposerProps> = ({
   isPreview,
@@ -29,251 +29,125 @@ const ThreadComposer: React.FC<ThreadComposerProps> = ({
   const router = useRouter();
   const { userProfile } = useUserProfile();
   const [threadContent, setThreadContent] = useState("");
-  const [text, setText] = useState("");
-  const [mediaFiles, setMediaFiles] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
 
   const addThread = useMutation(api.messages.addThread);
-  const generateUploadUrl = useMutation(api.messages.generateUploadUrl);
+
+  const {
+    mediaFiles,
+    setMediaFiles,
+    loading,
+    handleCamera,
+    handleLibrary,
+    uploadMediaFiles,
+  } = useMediaManager();
 
   const handleSubmit = async () => {
-    setLoading(true);
+    if (loading) return;
     try {
       const ids = mediaFiles.length ? await uploadMediaFiles() : [];
-      await addThread({
-        threadId,
-        content: threadContent,
-        mediaFiles: ids,
-      });
+      await addThread({ threadId, content: threadContent, mediaFiles: ids });
       setThreadContent("");
       setMediaFiles([]);
       router.dismiss();
     } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
+      console.error(e);
     }
   };
-
-  const handleCamera = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const { granted } = await ImagePicker.requestCameraPermissionsAsync();
-      if (!granted) {
-        setError("Camera permission denied.");
-        return;
-      }
-
-      const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: false,
-        mediaTypes: ["images", "videos", "livePhotos"],
-      });
-
-      if (!result.canceled && result.assets?.length) {
-        const uri = result.assets[0].uri;
-        setMediaFiles((prev) => [...prev, uri]);
-      }
-    } catch {
-      setError("Something went wrong with the camera.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLibrary = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const { granted } =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!granted) {
-        console.log("Media Picker permission denied");
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: false,
-        aspect: [1, 1],
-        quality: 1,
-        mediaTypes: ["images", "videos"],
-        allowsMultipleSelection: true,
-      });
-
-      if (!result.canceled && result.assets?.length) {
-        const uris = result.assets.map((a) => a.uri);
-        setMediaFiles((prev) => [...prev, ...uris]);
-      }
-    } catch (err) {
-      console.log("Something went wrong", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  async function uploadMediaFiles(): Promise<string[]> {
-    const ids: string[] = [];
-
-    for (const uri of mediaFiles) {
-
-      const uploadUrl = await generateUploadUrl();
-
-      // Step 2: get blob from file system
-      const resp = await fetch(uri);
-      const blob = await resp.blob();
-
-      // Step 3: POST blob to signed URL
-      const uploadResp = await fetch(uploadUrl, {
-        method: "POST",
-        headers: { "Content-Type": blob.type },
-        body: blob,
-      });
-      if (!uploadResp.ok) throw new Error("Upload failed");
-
-      // Step 4: extract storage ID
-      const { storageId } = await uploadResp.json();
-      ids.push(storageId);
-    }
-
-    return ids;
-  }
 
   return (
     <KeyboardAvoidingView
       className="flex-1"
-      behavior={Platform.OS === "ios" ? "padding" : "padding"}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
-      enabled
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View className="px-4 pt-6 justify-items-stretch flex flex-1 justify-between">
-          <View className="flex flex-col">
+        <View className="flex-1 px-4 pt-6 justify-between">
+          {!isPreview && (
             <Header
-              title="Create Post"
+              title={isReply ? "Write a Reply" : "Create Post"}
               leftText="Cancel"
-              rightText="Post"
+              rightText={isReply ? "Reply" : "Post"}
               onPressLeft={() => setShowDiscardModal(true)}
               onPressRight={handleSubmit}
             />
+          )}
+          <ScrollView keyboardShouldPersistTaps="handled">
+            <View className="border-hairline flex-row px-4 py-4 rounded-2xl bg-white dark:bg-black dark:border-white">
+              <Image
+                source={
+                  userProfile?.imageUrl
+                    ? { uri: userProfile.imageUrl }
+                    : undefined
+                }
+                className="size-12 rounded-full"
+              />
+              <View className="flex-1 px-4">
+                <Text className="font-semibold text-base text-black dark:text-white">
+                  {userProfile?.first_name} {userProfile?.last_name}
+                </Text>
+                <Text className="text-gray-500">@{userProfile?.username}</Text>
 
-            {/* Main scrollable content */}
-            <ScrollView
-              className="py-2 px-2"
-              keyboardShouldPersistTaps="handled"
-            >
-              <View className="border-hairline flex-row px-4 py-4 rounded-2xl bg-white dark:bg-black dark:border-white">
-                <Image
-                  source={
-                    userProfile?.imageUrl
-                      ? { uri: userProfile.imageUrl }
-                      : undefined
-                  }
-                  className="size-12 rounded-full"
-                />
-                <View className="flex-1 flex-col px-4">
-                  <Text className="font-semibold text-base text-black dark:text-white">
-                    {userProfile?.first_name} {userProfile?.last_name}
-                  </Text>
-                  <Text className="text-gray-500">
-                    @{userProfile?.username}
-                  </Text>
-
-                  {/* Input section */}
-                  <View className="flex space-y-3 pt-2">
-                    {/* if image selected  */}
-                    {mediaFiles.length > 0 && (
-                      <View className="flex-row flex-wrap mt-2">
-                        {mediaFiles.map((uri, idx) => (
-                          <View key={idx} className="relative h-20 w-20 m-1">
-                            <Image
-                              source={{ uri }}
-                              className="h-full w-full rounded-md"
-                            />
-                            <TouchableOpacity
-                              onPress={() => {
-                                setMediaFiles((prev) =>
-                                  prev.filter((_, i) => i !== idx)
-                                );
-                              }}
-                              className="absolute -top-1 -right-1 bg-white rounded-full p-0.5 shadow-md"
-                            >
-                              <Entypo
-                                name="circle-with-cross"
-                                size={18}
-                                color="black"
-                              />
-                            </TouchableOpacity>
-                          </View>
-                        ))}
-                      </View>
-                    )}
-
-                    {/* Single instance of the text input */}
-                    <View className="rounded-lg pl-3 py-2 bg-gray-50 dark:bg-neutral-900 flex-row items-end space-x-2">
-                      <TextInput
-                        value={threadContent}
-                        onChangeText={setThreadContent}
-                        placeholder={"What's on your mind?"}
-                        multiline
-                        numberOfLines={4}
-                        className="flex-1 text-base text-black dark:text-white"
-                        placeholderTextColor="#888"
-                      />
-                      <TouchableOpacity
-                        onPress={() => {
-                          if (isReply) {
-                            console.log("replied");
-                          } else {
-                            handleSubmit();
+                {mediaFiles.length > 0 && (
+                  <View className="flex-row flex-wrap mt-2">
+                    {mediaFiles.map((uri, idx) => (
+                      <View key={idx} className="relative h-20 w-20 m-1">
+                        <Image
+                          source={{ uri }}
+                          className="h-full w-full rounded-md"
+                        />
+                        <TouchableOpacity
+                          onPress={() =>
+                            setMediaFiles((prev) =>
+                              prev.filter((_, i) => i !== idx)
+                            )
                           }
-                        }}
-                        className="p-2"
-                      >
-                        <Ionicons name="send-outline" size={20} color="#555" />
-                      </TouchableOpacity>
-                    </View>
+                          className="absolute top-0 right-0 bg-white rounded-full p-0.5 shadow-md"
+                        >
+                          <Entypo
+                            name="circle-with-cross"
+                            size={18}
+                            color="black"
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
                   </View>
+                )}
 
-                  {/* Icons row */}
-                  <View className="flex flex-row gap-6 pt-4">
-                    <TouchableOpacity onPress={() => handleLibrary()}>
-                      <Ionicons name="image-outline" size={20} />
+                <View className="flex-row items-end rounded-lg pl-3 py-2 bg-gray-50 dark:bg-neutral-900 space-x-2">
+                  <TextInput
+                    value={threadContent}
+                    onChangeText={setThreadContent}
+                    placeholder={
+                      isReply ? "Write a reply..." : "What's on your mind?"
+                    }
+                    multiline
+                    numberOfLines={isReply ? 2 : 4}
+                    className="flex-1 text-base text-black dark:text-white"
+                    placeholderTextColor="#888"
+                  />
+                  {isPreview && (
+                    <TouchableOpacity onPress={handleSubmit} className="p-2">
+                      <Ionicons name="send-outline" size={20} color="#555" />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleCamera()}>
-                      <Ionicons name="camera-outline" size={20} />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleCamera()}>
-                      <Ionicons name="videocam-outline" size={20} />
-                    </TouchableOpacity>
-                  </View>
+                  )}
+                </View>
+
+                <View className="flex-row gap-6 pt-4">
+                  <TouchableOpacity onPress={() => handleLibrary}>
+                    <Ionicons name="image-outline" size={20} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleCamera}>
+                    <Ionicons name="camera-outline" size={20} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleCamera}>
+                    <Ionicons name="videocam-outline" size={20} />
+                  </TouchableOpacity>
                 </View>
               </View>
-            </ScrollView>
-          </View>
-
-          {/* Fixed bottom input */}
-          {/* reply  */}
-          <View className="border-hairline rounded-lg py-2 px-2 m-2 dark:bg-neutral-900">
-            <View className="flex-row items-center space-x-2">
-              <TextInput
-                value={threadContent}
-                onChangeText={setThreadContent}
-                placeholder={
-                  isReply ? "Write a reply..." : "What's on your mind?"
-                }
-                multiline
-                className="flex-1 text-base text-black dark:text-white py-1"
-                placeholderTextColor="#888"
-              />
-              <TouchableOpacity onPress={handleSubmit} className="p-2">
-                <Ionicons name="send-outline" size={24} color="#555" />
-              </TouchableOpacity>
             </View>
-          </View>
-          {/* end  */}
+          </ScrollView>
 
           {showDiscardModal && (
             <AlertModal
@@ -284,9 +158,7 @@ const ThreadComposer: React.FC<ThreadComposerProps> = ({
                 setMediaFiles([]);
                 setShowDiscardModal(false);
               }}
-              onSave={() => {
-                setShowDiscardModal(false);
-              }}
+              onSave={() => setShowDiscardModal(false)}
               onCancel={() => setShowDiscardModal(false)}
             />
           )}

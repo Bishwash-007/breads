@@ -2,8 +2,8 @@ import { View, Text, Image, TouchableOpacity } from "react-native";
 import { Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { ProfileProps } from "./Profile";
 import { formatNumber } from "@/utils/format";
+import { ProfileProps } from "@/types/types";
 
 export const UserProfileView: React.FC<ProfileProps> = () => {
   const { userProfile } = useUserProfile();
@@ -43,12 +43,10 @@ export const UserProfileView: React.FC<ProfileProps> = () => {
       </View>
 
       <View className="flex flex-row items-center gap-2 justify-start pt-2">
-        <Ionicons
-          name="globe-outline"
-          size={12}
-          color="gray"
-        />
-        <Text className="text-black dark:text-white">{userProfile?.websiteUrl}</Text>
+        <Ionicons name="globe-outline" size={12} color="gray" />
+        <Text className="text-black dark:text-white">
+          {userProfile?.websiteUrl}
+        </Text>
       </View>
 
       <>

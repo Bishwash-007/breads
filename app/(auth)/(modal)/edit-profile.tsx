@@ -6,45 +6,33 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-import React, { useState } from "react";
+import React from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { Header } from "@/components/ui/ModalHeader";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import { Ionicons } from "@expo/vector-icons";
 import EditAvatarModal from "@/components/AlertModal";
 import { getProfileFields } from "@/hooks/profile";
+import { useEditProfileForm } from "@/hooks/user/useEditProfileForm";
 
 const EditProfile = () => {
-  const { biostring, linkstring, userId, imageUrl } = useLocalSearchParams<{
+  const params = useLocalSearchParams<{
     biostring: string;
     linkstring: string;
     userId: string;
     imageUrl: string;
   }>();
 
-  const [bio, setBio] = useState(biostring);
-  const [link, setLink] = useState(linkstring);
-  const [image, setImage] = useState(imageUrl);
-  const [newImage, setNewImage] = useState<string | null>(null);
-  const [showModal, setShowModal] = useState(false);
-
-  const updateUser = useMutation(api.users.updateUser);
-
-  const onDone = async () => {
-    await updateUser({
-      _id: userId as Id<"users">,
-      bio,
-      websiteUrl: link,
-    });
-    router.dismiss();
-  };
-
-  const handleImagePicked = (uri: string) => {
-    setNewImage(uri);
-    setImage(uri);
-  };
+  const {
+    bio,
+    setBio,
+    link,
+    setLink,
+    image,
+    showModal,
+    setShowModal,
+    onDone,
+    handleImagePicked,
+  } = useEditProfileForm(params as any);
 
   const fields = getProfileFields(bio, setBio, link, setLink);
 
@@ -54,7 +42,10 @@ const EditProfile = () => {
         title="Edit-Profile"
         leftText="Cancel"
         rightText="Done"
-        onPressRight={onDone}
+        onPressRight={async () => {
+          await onDone();
+          router.dismiss();
+        }}
         onPressLeft={() => router.dismiss()}
       />
 

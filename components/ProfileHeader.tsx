@@ -1,9 +1,9 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { ProfileProps } from "./Profile";
 import Tabs from "./Tabs";
 import { UserProfileView } from "./UserProfile";
+import { ProfileProps } from "@/types/types";
 
 export const ListHeaderComponent: React.FC<{
   showBackButton: ProfileProps["showBackButton"];

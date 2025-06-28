@@ -1,19 +1,9 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs, useRouter } from "expo-router";
-import {
-  Platform,
-  TouchableOpacity,
-  useColorScheme,
-} from "react-native";
+import { Platform, TouchableOpacity, useColorScheme } from "react-native";
 import * as Haptics from "expo-haptics";
 import { useAuth } from "@clerk/clerk-expo";
-
-interface TabBarIconProps {
-  name: keyof typeof Ionicons.glyphMap;
-  color: string;
-  size?: number;
-  focused?: boolean;
-}
+import { TabBarIconProps } from "@/types/types";
 
 const TabBarIcon = ({ name, color, size = 24 }: TabBarIconProps) => (
   <Ionicons name={name} color={color} size={size} />
@@ -119,11 +109,7 @@ export default function TabsLayout() {
           ),
           headerRight: () => (
             <TouchableOpacity onPress={handleSignOut} className="mr-6">
-              <Ionicons
-                name="log-out-outline"
-                size={24}
-                color={iconColor}
-              />
+              <Ionicons name="log-out-outline" size={24} color={iconColor} />
             </TouchableOpacity>
           ),
         }}

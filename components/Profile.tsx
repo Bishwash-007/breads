@@ -1,13 +1,12 @@
 import { View, Text, FlatList } from "react-native";
-import { Id } from "@/convex/_generated/dataModel";
 import { useAuth } from "@clerk/clerk-expo";
 import { ListHeaderComponent } from "./ProfileHeader";
 import EmptyState from "./EmptyState";
+import { ProfileProps, ThreadItemProps } from "@/types/types";
 
-export type ProfileProps = {
-  userId?: Id<"users">;
-  showBackButton: boolean;
-};
+import { api } from "@/convex/_generated/api";
+import { usePaginatedQuery } from "convex/react";
+import ThreadItem from "./Threads";
 
 const Profile: React.FC<ProfileProps> = ({ userId, showBackButton }) => {
   const { signOut } = useAuth();
@@ -19,17 +18,23 @@ const Profile: React.FC<ProfileProps> = ({ userId, showBackButton }) => {
       console.error("Sign-out error:", err);
     }
   };
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.messages.getThreads,
+    {
+      userId: userId,
+    },
+    {
+      initialNumItems: 5,
+    }
+  );
+
 
   return (
     <View className="flex-1 pt-12 bg-white dark:bg-black">
       <FlatList
-        data={[]}
-        renderItem={() => (
-          <Text className="text-black dark:text-white">
-            This is renderItem
-          </Text>
-        )}
-        keyExtractor={(_, i) => String(i)}
+        data={results}
+        renderItem={({ item }) => <ThreadItem {...(item as ThreadItemProps)} />}
+        keyExtractor={(item) => item._id}
         ListEmptyComponent={<EmptyState />}
         ListHeaderComponent={
           <ListHeaderComponent

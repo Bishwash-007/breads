@@ -1,9 +1,8 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Stack} from "expo-router";
-import { Text, TouchableOpacity } from "react-native";
+import { Stack } from "expo-router";
+import { TouchableOpacity } from "react-native";
 
 const AuthLayout = () => {
-
   return (
     <Stack
       screenOptions={{
@@ -29,10 +28,7 @@ const AuthLayout = () => {
           presentation: "transparentModal",
           headerShown: false,
           headerRight: () => (
-            <TouchableOpacity
-              style={{ marginRight: 24 }}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={{ marginRight: 24 }} activeOpacity={0.7}>
               <Ionicons
                 name="ellipsis-horizontal-circle"
                 size={24}
@@ -49,14 +45,6 @@ const AuthLayout = () => {
         options={{
           presentation: "modal",
           headerShown: false,
-          headerLeft: () => (
-            <TouchableOpacity
-              style={{ marginLeft: 24 }}
-              activeOpacity={0.7}
-            >
-              <Text>Cancel</Text>
-            </TouchableOpacity>
-          ),
         }}
       />
     </Stack>

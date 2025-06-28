@@ -1,14 +1,7 @@
+import { ModalHeaderProps } from "@/types/types";
 import { Link } from "expo-router";
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-
-export type ModalHeaderProps = {
-  title: string;
-  leftText: string;
-  rightText: string;
-  onPressLeft?: () => void;
-  onPressRight?: () => void;
-};
 
 export const Header: React.FC<ModalHeaderProps> = ({
   title,

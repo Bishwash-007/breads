@@ -5,14 +5,12 @@ module.exports = {
     "./components/**/*.{js,jsx,ts,tsx}",
   ],
   presets: [require("nativewind/preset")],
-  darkMode: "class", // Use 'class' so you can toggle dark mode manually
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
         white: "#ffffff",
         black: "#000000",
-
-        // Muted neutral colors for text, borders, backgrounds
         muted: {
           50: "#fafafa",
           100: "#f5f5f5",

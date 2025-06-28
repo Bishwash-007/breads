@@ -23,7 +23,7 @@ const AppBootstrap = () => {
     DMSans_700Bold,
   });
 
-  // Set initial theme from system
+  // sets initial theme to system until the useEffect takes place
   useEffect(() => {
     const systemTheme = Appearance.getColorScheme();
     if (systemTheme === "dark" || systemTheme === "light") {
@@ -31,19 +31,17 @@ const AppBootstrap = () => {
     }
   }, []);
 
-  // Prevents splash screen autohhide
   useEffect(() => {
     SplashScreen.preventAutoHideAsync();
   }, []);
 
-  // Hide splash once fonts are ready
   useEffect(() => {
     if (fontsLoaded) {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, isLoaded]);
 
-  // routes
+  // routess
   useEffect(() => {
     if (!isLoaded || !fontsLoaded) return;
 

@@ -1,5 +1,12 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import React, { useState, useRef } from "react";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  FlatList,
+  ViewToken,
+} from "react-native";
 import {
   Ionicons,
   AntDesign,
@@ -8,8 +15,12 @@ import {
 } from "@expo/vector-icons";
 import { ThreadItemProps } from "@/types/types";
 import { formatNumber, formatTimestamp } from "@/utils/format";
+import { api } from "@/convex/_generated/api";
+import { useMutation, useQuery } from "convex/react";
+import { Link } from "expo-router";
 
 const ThreadItem: React.FC<ThreadItemProps> = ({
+  _id,
   content,
   creator,
   mediaFiles,
@@ -18,6 +29,38 @@ const ThreadItem: React.FC<ThreadItemProps> = ({
   commentCount,
   _creationTime,
 }) => {
+  //states
+  const [activeIndex, setActiveIndex] = useState(0);
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 50,
+  }).current;
+
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      if (viewableItems.length > 0) {
+        setActiveIndex(viewableItems[0].index ?? 0);
+      }
+    }
+  ).current;
+
+  // vars
+  const toggleLike = useMutation(api.messages.toggleLike);
+  const hasLiked = useQuery(api.messages.hasLiked, { messageId: _id });
+
+  const [likePending, setLikePending] = useState(false);
+
+  const handleToggleLike = async () => {
+    if (likePending) return;
+    setLikePending(true);
+    try {
+      await toggleLike({ messageId: _id });
+    } catch (err) {
+      console.error("Failed to toggle like:", err);
+    } finally {
+      setLikePending(false);
+    }
+  };
+
   return (
     <View className="py-4 px-4 border-b border-muted-300 dark:border-muted-800">
       <View className="flex-row items-start space-x-3">
@@ -47,33 +90,64 @@ const ThreadItem: React.FC<ThreadItemProps> = ({
           </Text>
 
           {/* Media */}
+          {/* Media */}
           {mediaFiles?.length > 0 && (
-            <View
-              className={`py-2 ${
-                mediaFiles.length === 1 ? "" : "flex-row flex-wrap space-x-2"
-              }`}
-            >
-              {mediaFiles.map((uri, idx) => {
-                const dimension =
-                  mediaFiles.length === 1
-                    ? "w-full aspect-square"
-                    : "w-36 h-36";
-                return (
-                  <Image
-                    key={idx}
-                    source={{ uri }}
-                    className={`${dimension} rounded-lg mb-2`}
-                    resizeMode="cover"
-                  />
-                );
-              })}
+            <View className="py-2 -mx-4">
+              <FlatList
+                data={mediaFiles}
+                keyExtractor={(item, index) => `${item}-${index}`}
+                renderItem={({ item }) => (
+                  <Link
+                    href={`/(auth)/(modal)/image/${encodeURIComponent(item)}`}
+                    asChild
+                  >
+                    <TouchableOpacity>
+                      <Image
+                        source={{ uri: item }}
+                        className="w-[360px] h-[360px] rounded-lg mr-2"
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
+                  </Link>
+                )}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                pagingEnabled
+                scrollEventThrottle={16}
+                onViewableItemsChanged={onViewableItemsChanged}
+                viewabilityConfig={viewabilityConfig}
+              />
+
+              {/* Pagination dots */}
+              {mediaFiles.length > 1 && (
+                <View className="flex-row justify-center mt-2 space-x-2">
+                  {mediaFiles.map((_, index) => (
+                    <View
+                      key={index}
+                      className={`w-2 h-2 mx-1 rounded-full ${
+                        index === activeIndex
+                          ? "bg-black dark:bg-white"
+                          : "bg-gray-300 dark:bg-gray-600"
+                      }`}
+                    />
+                  ))}
+                </View>
+              )}
             </View>
           )}
 
           {/* Actions */}
           <View className="flex-row justify-between mt-2 pr-8">
-            <TouchableOpacity className="flex-row items-center gap-2">
-              <Ionicons name="heart-outline" size={20} color={"currentColor"} />
+            <TouchableOpacity
+              className="flex-row items-center gap-2"
+              onPress={handleToggleLike}
+              disabled={likePending}
+            >
+              <Ionicons
+                name={hasLiked ? "heart" : "heart-outline"}
+                size={20}
+                color={hasLiked ? "red" : "currentColor"}
+              />
               <Text className="text-sm text-black dark:text-white">
                 {formatNumber(likeCount)}
               </Text>

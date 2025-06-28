@@ -47,6 +47,21 @@ const AuthLayout = () => {
           headerShown: false,
         }}
       />
+
+      <Stack.Screen
+        name="(modal)/image/[url]"
+        options={{
+          animation:'fade_from_bottom',
+          presentation: "fullScreenModal",
+          headerShown: false,
+          title: "",
+          headerLeft: () => (
+            <TouchableOpacity>
+              <Ionicons name="close" size={24} color={"white"} />
+            </TouchableOpacity>
+          ),
+        }}
+      />
     </Stack>
   );
 };

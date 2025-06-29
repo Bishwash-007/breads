@@ -3,5 +3,6 @@
     "source.fixAll": "explicit",
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
-  }
+  },
+  "cmake.sourceDirectory": "/Users/bishwashchaudhari/ReactProjects/breads/node_modules/react-native-reanimated/android"
 }

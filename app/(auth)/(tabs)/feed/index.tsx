@@ -28,6 +28,7 @@ const Feed = () => {
       initialNumItems: 5,
     }
   );
+  
 
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();

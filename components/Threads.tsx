@@ -15,9 +15,22 @@ import {
 } from "@expo/vector-icons";
 import { ThreadItemProps } from "@/types/types";
 import { formatNumber, formatTimestamp } from "@/utils/format";
-import { api } from "@/convex/_generated/api";
-import { useMutation, useQuery } from "convex/react";
-import { Link } from "expo-router";
+import { Link, LinkProps } from "expo-router";
+
+type MaybeLinkProps = React.PropsWithChildren<{
+  href?: LinkProps["href"];
+  disabled?: boolean;
+}>;
+
+const MaybeLink: React.FC<MaybeLinkProps> = ({ href, children, disabled }) => {
+  return disabled || !href ? (
+    <>{children}</>
+  ) : (
+    <Link href={href} asChild>
+      {children}
+    </Link>
+  );
+};
 
 const ThreadItem: React.FC<ThreadItemProps> = ({
   _id,
@@ -28,6 +41,9 @@ const ThreadItem: React.FC<ThreadItemProps> = ({
   retweetCount,
   commentCount,
   _creationTime,
+  disableMediaLink,
+  disableProfileLink,
+  disableThreadLink,
 }) => {
   //states
   const [activeIndex, setActiveIndex] = useState(0);
@@ -43,23 +59,28 @@ const ThreadItem: React.FC<ThreadItemProps> = ({
     }
   ).current;
 
-  // vars
-  const toggleLike = useMutation(api.messages.toggleLike);
-  const hasLiked = useQuery(api.messages.hasLiked, { messageId: _id });
+  if (!creator) {
+    console.warn("ThreadItem: Missing creator", { _id });
+    return null;
+  }
 
-  const [likePending, setLikePending] = useState(false);
+  // // vars
+  // const toggleLike = useMutation(api.messages.toggleLike);
+  // const hasLiked = useQuery(api.messages.hasLiked, { messageId: _id });
 
-  const handleToggleLike = async () => {
-    if (likePending) return;
-    setLikePending(true);
-    try {
-      await toggleLike({ messageId: _id });
-    } catch (err) {
-      console.error("Failed to toggle like:", err);
-    } finally {
-      setLikePending(false);
-    }
-  };
+  // const [likePending, setLikePending] = useState(false);
+
+  // const handleToggleLike = async () => {
+  //   if (likePending) return;
+  //   setLikePending(true);
+  //   try {
+  //     await toggleLike({ messageId: _id });
+  //   } catch (err) {
+  //     console.error("Failed to toggle like:", err);
+  //   } finally {
+  //     setLikePending(false);
+  //   }
+  // };
 
   return (
     <View className="py-4 px-4 border-b border-muted-300 dark:border-muted-800">
@@ -73,9 +94,14 @@ const ThreadItem: React.FC<ThreadItemProps> = ({
         <View className="flex-1">
           {/* Header */}
           <View className="flex-col items-start px-2">
-            <Text className="font-semibold text-base text-black dark:text-white">
-              {creator.first_name} {creator.last_name}
-            </Text>
+            <MaybeLink
+              href={`/(auth)/(tabs)/feed/profile/${creator._id}`}
+              disabled={disableProfileLink}
+            >
+              <Text className="font-semibold text-base text-black dark:text-white">
+                {creator.first_name} {creator.last_name}
+              </Text>
+            </MaybeLink>
             <Text className="text-muted-light dark:text-muted-dark text-xs">
               @{creator.username}
             </Text>
@@ -85,11 +111,12 @@ const ThreadItem: React.FC<ThreadItemProps> = ({
           </View>
 
           {/* Content */}
-          <Text className="text-base pt-2 text-black dark:text-white">
-            {content}
-          </Text>
+          <Link href={`/(auth)/(tabs)/feed/${_id}`} asChild>
+            <Text className="text-base pt-2 text-black dark:text-white">
+              {content}
+            </Text>
+          </Link>
 
-          {/* Media */}
           {/* Media */}
           {mediaFiles?.length > 0 && (
             <View className="py-2 -mx-4">
@@ -97,9 +124,9 @@ const ThreadItem: React.FC<ThreadItemProps> = ({
                 data={mediaFiles}
                 keyExtractor={(item, index) => `${item}-${index}`}
                 renderItem={({ item }) => (
-                  <Link
+                  <MaybeLink
                     href={`/(auth)/(modal)/image/${encodeURIComponent(item)}`}
-                    asChild
+                    disabled={disableMediaLink}
                   >
                     <TouchableOpacity>
                       <Image
@@ -108,7 +135,7 @@ const ThreadItem: React.FC<ThreadItemProps> = ({
                         resizeMode="cover"
                       />
                     </TouchableOpacity>
-                  </Link>
+                  </MaybeLink>
                 )}
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -138,15 +165,11 @@ const ThreadItem: React.FC<ThreadItemProps> = ({
 
           {/* Actions */}
           <View className="flex-row justify-between mt-2 pr-8">
-            <TouchableOpacity
-              className="flex-row items-center gap-2"
-              onPress={handleToggleLike}
-              disabled={likePending}
-            >
+            <TouchableOpacity className="flex-row items-center gap-2">
               <Ionicons
-                name={hasLiked ? "heart" : "heart-outline"}
+                name={"heart-outline"}
                 size={20}
-                color={hasLiked ? "red" : "currentColor"}
+                color={"currentColor"}
               />
               <Text className="text-sm text-black dark:text-white">
                 {formatNumber(likeCount)}

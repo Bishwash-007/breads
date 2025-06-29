@@ -192,91 +192,91 @@ export const generateUploadUrl = mutation(async (ctx) => {
   return await ctx.storage.generateUploadUrl();
 });
 
-export const toggleLike = mutation({
-  args: {
-    messageId: v.id("messages"),
-  },
-  handler: async (ctx, { messageId }) => {
-    const user = await getCurrentUserOrThrow(ctx);
+// export const toggleLike = mutation({
+//   args: {
+//     messageId: v.id("messages"),
+//   },
+//   handler: async (ctx, { messageId }) => {
+//     const user = await getCurrentUserOrThrow(ctx);
 
-    const existingLike = await ctx.db
-      .query("likes")
-      .withIndex("byUserMessage", (q) =>
-        q.eq("userId", user._id).eq("messageId", messageId)
-      )
-      .unique();
+//     const existingLike = await ctx.db
+//       .query("likes")
+//       .withIndex("byUserMessage", (q) =>
+//         q.eq("userId", user._id).eq("messageId", messageId)
+//       )
+//       .unique();
 
-    const message = await ctx.db.get(messageId);
-    if (!message) throw new Error("Message not found");
+//     const message = await ctx.db.get(messageId);
+//     if (!message) throw new Error("Message not found");
 
-    if (existingLike) {
-      await ctx.db.delete(existingLike._id);
-      await ctx.db.patch(messageId, {
-        likeCount: Math.max(0, (message.likeCount || 1) - 1),
-      });
-    } else {
-      await ctx.db.insert("likes", {
-        userId: user._id,
-        messageId,
-      });
-      await ctx.db.patch(messageId, {
-        likeCount: (message.likeCount || 0) + 1,
-      });
-    }
-  },
-});
+//     if (existingLike) {
+//       await ctx.db.delete(existingLike._id);
+//       await ctx.db.patch(messageId, {
+//         likeCount: Math.max(0, (message.likeCount || 1) - 1),
+//       });
+//     } else {
+//       await ctx.db.insert("likes", {
+//         userId: user._id,
+//         messageId,
+//       });
+//       await ctx.db.patch(messageId, {
+//         likeCount: (message.likeCount || 0) + 1,
+//       });
+//     }
+//   },
+// });
 
-export const hasLiked = query({
-  args: {
-    messageId: v.id("messages"),
-  },
-  handler: async (ctx, { messageId }) => {
-    const user = await getCurrentUserOrThrow(ctx);
+// export const hasLiked = query({
+//   args: {
+//     messageId: v.id("messages"),
+//   },
+//   handler: async (ctx, { messageId }) => {
+//     const user = await getCurrentUserOrThrow(ctx);
 
-    const like = await ctx.db
-      .query("likes")
-      .withIndex("byUserMessage", (q) =>
-        q.eq("userId", user._id).eq("messageId", messageId)
-      )
-      .unique();
+//     const like = await ctx.db
+//       .query("likes")
+//       .withIndex("byUserMessage", (q) =>
+//         q.eq("userId", user._id).eq("messageId", messageId)
+//       )
+//       .unique();
 
-    return !!like;
-  },
-});
+//     return !!like;
+//   },
+// });
 
 
-export const toggleLikes = mutation({
-  args: {
-    messageId: v.id("messages"),
-  },
-  handler: async (ctx, { messageId }) => {
-    const user = await getCurrentUserOrThrow(ctx);
+// export const toggleLikes = mutation({
+//   args: {
+//     messageId: v.id("messages"),
+//   },
+//   handler: async (ctx, { messageId }) => {
+//     const user = await getCurrentUserOrThrow(ctx);
 
-    const existingLike = await ctx.db
-      .query("likes")
-      .withIndex("byUserMessage", (q) =>
-        q.eq("userId", user._id).eq("messageId", messageId)
-      )
-      .unique();
+//     const existingLike = await ctx.db
+//       .query("likes")
+//       .withIndex("byUserMessage", (q) =>
+//         q.eq("userId", user._id).eq("messageId", messageId)
+//       )
+//       .unique();
 
-    const message = await ctx.db.get(messageId);
-    if (!message) throw new Error("Message not found");
+//     const message = await ctx.db.get(messageId);
+//     if (!message) throw new Error("Message not found");
 
-    if (existingLike) {
-      // Unlike
-      await ctx.db.delete(existingLike._id);
-      await ctx.db.patch(messageId, {
-        likeCount: Math.max(0, (message.likeCount || 1) - 1),
-      });
-    } else {
-      // Like
-      await ctx.db.insert("likes", {
-        userId: user._id,
-        messageId,
-      });
-      await ctx.db.patch(messageId, {
-        likeCount: (message.likeCount || 0) + 1,
-      });
-    }
-  },
-});
+//     if (existingLike) {
+//       // Unlike
+//       await ctx.db.delete(existingLike._id);
+//       await ctx.db.patch(messageId, {
+//         likeCount: Math.max(0, (message.likeCount || 1) - 1),
+//       });
+//     } else {
+//       // Like
+//       await ctx.db.insert("likes", {
+//         userId: user._id,
+//         messageId,
+//       });
+//       await ctx.db.patch(messageId, {
+//         likeCount: (message.likeCount || 0) + 1,
+//       });
+//     }
+//   },
+// });

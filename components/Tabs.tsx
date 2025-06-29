@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, TouchableOpacity, FlatList } from "react-native";
 
 const tabItems = ["Threads", "Replies", "Mentions"];
 
-const Tabs = () => {
-  const [activeTab, setActiveTab] = useState("Threads");
+type TabsProps = {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+};
 
+const Tabs: React.FC<TabsProps> = ({ activeTab, setActiveTab }) => {
   const renderTab = ({ item }: { item: string }) => {
     const isActive = activeTab === item;
 
@@ -25,7 +28,6 @@ const Tabs = () => {
           {item}
         </Text>
 
-        {/* Active underline */}
         <View
           className={`mt-2 h-0.5 rounded-full ${
             isActive ? "w-14 bg-black dark:bg-white" : "w-0"

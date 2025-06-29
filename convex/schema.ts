@@ -26,11 +26,6 @@ export const Message = {
   websiteUrl: v.optional(v.string()), // Optional website URL
 };
 
-export const Like = {
-  userId: v.id("users"),
-  messageId: v.id("messages"),
-};
-
 export default defineSchema({
   users: defineTable(User)
     .index("byClerkId", ["clerkId"])
@@ -38,7 +33,4 @@ export default defineSchema({
       searchField: "username",
     }),
   messages: defineTable(Message),
-  likes: defineTable(Like)
-    .index("byMessageId", ["messageId"])
-    .index("byUserMessage", ["userId", "messageId"]),
 });

@@ -9,18 +9,30 @@ export type ThreadComposerProps = {
 
 export type ThreadItemProps = {
   _id: Id<"messages">;
+  _creationTime: number;
   content: string;
-  creator: {
-    first_name?: string;
-    last_name?: string;
-    username: string | null;
-    imageUrl?: string;
-  };
-  mediaFiles: string[];
+  commentCount: number;
   likeCount: number;
   retweetCount: number;
-  commentCount: number;
-  _creationTime: number;
+  mediaFiles: string[];
+  userId: string;
+  creator: {
+    _id: string;
+    _creationTime: number;
+    clerkId: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    username: string;
+    imageUrl: string;
+    bio: string;
+    location: string;
+    websiteUrl: string;
+    followersCount: number;
+  };
+  disableProfileLink?: boolean;
+  disableThreadLink?: boolean;
+  disableMediaLink?: boolean;
 };
 
 export type ProfileProps = {
@@ -72,3 +84,18 @@ export interface TabBarIconProps {
   size?: number;
   focused?: boolean;
 }
+
+export type UserProfile = {
+  _id: string;
+  _creationTime: number;
+  bio: string;
+  clerkId: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  username: string;
+  imageUrl: string;
+  location: string;
+  websiteUrl: string;
+  followersCount: number;
+};

@@ -1,20 +1,45 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import Tabs from "./Tabs";
 import { UserProfileView } from "./UserProfile";
-import { ProfileProps } from "@/types/types";
+import { useUser } from "@clerk/clerk-expo";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import Tabs from "./Tabs";
 
-export const ListHeaderComponent: React.FC<{
-  showBackButton: ProfileProps["showBackButton"];
+type Props = {
+  showBackButton?: boolean;
   handleSignOut: () => void;
-}> = ({ showBackButton, handleSignOut }) => {
+  userId?: Id<"users">;
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+};
+
+export const ListHeaderComponent: React.FC<Props> = ({
+  showBackButton,
+  handleSignOut,
+  userId,
+  activeTab,
+  setActiveTab,
+}) => {
+  const { user } = useUser();
+  const currentClerkId = user?.id;
+
+  const currentUser = useQuery(api.users.getUserByClerkId, {
+    clerkId: currentClerkId,
+  });
+
+  const isCurrentUser = !userId || userId === currentUser?._id;
+
   return (
     <>
       <View className="px-4 flex-row items-center justify-between mb-2">
-        {/* Left */}
+        {/* Left Icon: back button OR web icon */}
         <View>
-          {showBackButton ? (
+          {isCurrentUser ? (
+            <MaterialCommunityIcons name="web" size={24} color="black" />
+          ) : (
             <TouchableOpacity
               onPress={() => router.back()}
               className="flex-row items-center space-x-2"
@@ -24,23 +49,22 @@ export const ListHeaderComponent: React.FC<{
                 Back
               </Text>
             </TouchableOpacity>
-          ) : (
-            <MaterialCommunityIcons name="web" size={24} color="black" />
           )}
         </View>
 
-        {/* Right */}
+        {/* Right Icon: show logout only if it's current user */}
         <View className="flex-row items-center justify-center space-x-4 gap-4">
           <Ionicons name="logo-instagram" size={24} color="black" />
-          <TouchableOpacity onPress={() => handleSignOut()}>
-            <Ionicons name="log-out-outline" size={24} color="black" />
-          </TouchableOpacity>
+          {isCurrentUser && (
+            <TouchableOpacity onPress={handleSignOut}>
+              <Ionicons name="log-out-outline" size={24} color="black" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
-      {/* user profile */}
-      <UserProfileView showBackButton={false} />
-      <Tabs />
+      <UserProfileView userId={userId} />
+      <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
     </>
   );
 };

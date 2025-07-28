@@ -4,12 +4,10 @@ This is a clone of the Threads app — think minimalist social vibes with power 
 
 ## 🚀 Tech Stack
 
-<div align="start" style="display: flex; justify-content: center; align-items: start; gap: 2.5rem; margin: 40px 0;">
-<img src='./public/logos/tailwindcss.svg' height="50" width="50">
-<img src='./public/logos/react.svg' height="50" width="50">
-<img src='./public/logos/expo.svg' height="50" width="50">
-
-
+<div align="start" style="display: flex; justify-content: center; align-items: flex-start; gap: 2.5rem; margin: 40px 0;">
+  <img src="./public/logos/tailwindcss.svg" alt="Tailwind CSS Logo" width="50" height="50">
+  <img src="./public/logos/react.svg" alt="React Logo" width="50" height="50">
+  <img src="./public/logos/expo.svg" alt="Expo Logo" width="50" height="50">
 </div>
 
 ## 📱 Screenshots

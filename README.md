@@ -4,7 +4,7 @@ This is a clone of the Threads app — think minimalist social vibes with power 
 
 ## 🚀 Tech Stack
 
-<div align="center" style="display: flex; justify-content: center; align-items: start; gap: 2.5rem; margin: 40px 0;">
+<div align="start" style="display: flex; justify-content: center; align-items: start; gap: 2.5rem; margin: 40px 0;">
 <img src='./public/logos/tailwindcss.svg' height="50" width="50">
 <img src='./public/logos/react.svg' height="50" width="50">
 <img src='./public/logos/expo.svg' height="50" width="50">
@@ -21,26 +21,32 @@ This is a clone of the Threads app — think minimalist social vibes with power 
 ## 🛠 Usage
 
 1. Clone the repository
-
    ```zsh
    git clone https://github.com/Bishwash-007/breads.git
    cd breads
    ```
 
 2. Install dependencies
-
    ```zsh
    npm install
    ```
 
-3. Start the Convex server
+3. Set Up Environment Variables `.env`
+   ```.env
+   CONVEX_DEPLOYMENT=
 
+   EXPO_PUBLIC_CONVEX_URL=
+   EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=
+   EXPO_PUBLIC_SENTRY_DSN=
+   SENTRY_AUTH_TOKEN=
+   ```
+
+4. Start the Convex server
    ```zsh
    npx convex dev
    ```
 
-4. Start the app
-
+5. Start the app
    ```zsh
    npx expo start
    # or

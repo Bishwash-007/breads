@@ -135,7 +135,7 @@ const ThreadComposer: React.FC<ThreadComposerProps> = ({
                 </View>
 
                 <View className="flex-row gap-6 pt-4">
-                  <TouchableOpacity onPress={() => handleLibrary}>
+                  <TouchableOpacity onPress={()=>handleLibrary()}>
                     <Ionicons name="image-outline" size={20} />
                   </TouchableOpacity>
                   <TouchableOpacity onPress={handleCamera}>

@@ -4,7 +4,7 @@ This is a clone of the Threads app — think minimalist social vibes with power 
 
 ## 🚀 Tech Stack
 
-<div style="display: flex; justify-content: center; align-items: center; gap: 1.5rem; margin: 40px 0;">
+<div align='center' style="display: flex; justify-content: center; align-items: center; gap: 1.5rem; margin: 40px 0;">
 <img src='./public/logos/tailwindcss.svg' height="50" width="50">
 <img src='./public/logos/react.svg' height="50" width="50">
 <img src='./public/logos/expo.svg' height="50" width="50">
